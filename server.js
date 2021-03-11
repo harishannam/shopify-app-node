@@ -33,6 +33,7 @@ app.prepare().then(() => {
 
   server.use(
     createShopifyAuth({
+      accessMode: "offline",
       afterAuth(ctx) {
         const { shop, scope } = ctx.state.shopify;
         ACTIVE_SHOPIFY_SHOPS[shop] = scope;
@@ -42,7 +43,7 @@ app.prepare().then(() => {
     }),
   );
 
-  router.post("/graphql", verifyRequest(), async (ctx, next) => {
+  router.post("/graphql", verifyRequest({accessMode: "offline"}), async (ctx, next) => {
     await Shopify.Utils.graphqlProxy(ctx.req, ctx.res);
   });
 
@@ -64,7 +65,7 @@ app.prepare().then(() => {
 
   router.get("(/_next/static/.*)", handleRequest);
   router.get("/_next/webpack-hmr", handleRequest);
-  router.get("(.*)", verifyRequest(), handleRequest);
+  router.get("(.*)", verifyRequest({accessMode: "offline"}), handleRequest);
 
   server.use(router.allowedMethods());
   server.use(router.routes());
